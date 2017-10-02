@@ -15,16 +15,26 @@ function symlink() {
 }
 
 function install() {
-  for DOTFILE in $DOTFILES; do
-    DOT_FILE_NAME=$(basename $DOTFILE)
-    EXISTING_DOT_FILE=$HOME_DIR/$DOT_FILE_NAME
+  FOLDERS=$(find $DOTFILES_DIR/* -type d)
+  for FOLDER in $FOLDERS; do
+    if [[ -f $FOLDER/install.sh ]]; then
+      sh $FOLDER/install.sh
+    else
+      DOTFILES=$(find $FOLDER -type f -name '.[^.]*')
 
-    if [ -f $DOTFILE ]; then
-      if [ -f $EXISTING_DOT_FILE ] && [ ! -L $EXISTING_DOT_FILE ]; then
-        backup $EXISTING_DOT_FILE
-      fi
+      for DOTFILE in $DOTFILES; do
+        DOT_FILE_NAME=$(basename $DOTFILE)
+        EXISTING_DOT_FILE=$HOME_DIR/$DOT_FILE_NAME
 
-      symlink $EXISTING_DOT_FILE $DOTFILE
+        if [ -f $DOTFILE ]; then
+          if [[ -f $EXISTING_DOT_FILE && ( ! -L $EXISTING_DOT_FILE ) ]]; then
+            backup $EXISTING_DOT_FILE
+          fi
+
+          symlink $EXISTING_DOT_FILE $DOTFILE
+        fi
+      done
+
     fi
   done
 }
